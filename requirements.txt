@@ -1,0 +1,13 @@
+numpy
+pandas
+openpyxl
+statsmodels==0.15.0
+scikit-learn==1.8.0
+xgboost==3.4.1
+keras==3.15.1
+jax
+jaxlib
+scipy
+matplotlib
+seaborn
+tabulate
