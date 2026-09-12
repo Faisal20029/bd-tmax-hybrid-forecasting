@@ -1,7 +1,7 @@
 # Hybrid SARIMA–machine-learning forecasting of monthly maximum temperature at 16 Bangladesh stations
 
 Code and data for: Rahaman M, Holy FN, Ali MH, Yasmin S (2026) Hybrid SARIMA–Machine Learning Models for
-Maximum Temperature Forecasting in Bangladesh. Scientific Reports (in revision). Zenodo DOI: [to be added after first release]
+Maximum Temperature Forecasting in Bangladesh. Scientific Reports (in revision). Zenodo DOI: 10.5281/zenodo.22724139
 
 ## What is here
 - `data/newdata_1972_2025.xlsx` – monthly average maximum temperature (°C), 16 BMD stations, Jan 1972–Dec 2025,
