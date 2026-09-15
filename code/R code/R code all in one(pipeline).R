@@ -111,7 +111,8 @@ run_fold <- function(y, oy, ord, station) {
   list(metrics = rows, forecasts = fdf)
 }
 
-# ---------- main ----------
+# ---------- main (runs only when executed directly, not when source()d for its functions) ----------
+if (sys.nframe() == 0) {
 data <- load_all(); data <- lapply(data, function(y) window(y, end = c(END_DEV, 12)))
 all_m <- list(); all_f <- list(); orders <- list()
 for (st in names(data)) {
@@ -134,7 +135,7 @@ write.csv(pooled, "table_pooled_metrics_R.csv", row.names = FALSE)
 dm_rows <- Fc %>% group_by(station) %>% group_map(function(g, key) {
   p <- pooled %>% filter(station == key$station) %>% arrange(MAE); best <- p$model[1]; second <- p$model[2]
   e_b <- g$actual - g[[best]]; e_2 <- g$actual - g[[second]]; e_s <- g$actual - g$SARIMA; e_n <- g$actual - g$SNAIVE
-  dm <- function(e1, e2) if (all(e1 == e2)) NA else dm.test(e1, e2, h = H, power = 1, alternative = "two.sided")$p.value   # forecast::dm.test, |e| loss, HAC lag h-1
+  dm <- function(e1, e2) if (all(e1 == e2)) NA else dm.test(e1, e2, h = H, power = 1, alternative = "two.sided", varestimator = "bartlett")$p.value   # Bartlett HAC: never negative, no silent fallback to h=1
   data.frame(station = key$station, best = best, best_MAE = p$MAE[1], second = second, p_best_vs_2nd = dm(e_b, e_2),
              p_best_vs_SARIMA = dm(e_b, e_s), p_best_vs_SNAIVE = dm(e_b, e_n))
 }) %>% bind_rows(); rownames(dm_rows) <- NULL
@@ -143,6 +144,7 @@ write.csv(dm_rows, "table_dm_tests_R.csv", row.names = FALSE); print(dm_rows)
 # Friedman test across stations
 mat <- pooled %>% select(station, model, MAE) %>% tidyr::pivot_wider(names_from = model, values_from = MAE)
 print(friedman.test(as.matrix(mat[, models])))
+}  # end main
 
 # ---------- Split-conformal 95% PI for a station's chosen model (pooled-horizon, finite-sample corrected) ----------
 conformal_pi <- function(err, alpha = 0.05) { n <- length(err); q <- function(p) sort(err)[min(ceiling((n + 1) * p), n)]; c(lo = q(alpha / 2), hi = q(1 - alpha / 2)) }
