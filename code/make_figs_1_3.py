@@ -5,9 +5,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
 from statsmodels.tsa.seasonal import seasonal_decompose
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
-ap = argparse.ArgumentParser(); ap.add_argument("--shp", required=True); ap.add_argument("--data", default="newdata_1972_2025.xlsx")
-ap.add_argument("--shp1", default="ne_10m_admin_1_states_provinces/ne_10m_admin_1_states_provinces.shp",
-                help="Natural Earth admin-1 shapefile; division boundaries are skipped if it is missing"); a = ap.parse_args()
+ap = argparse.ArgumentParser(); ap.add_argument("--shp", required=True); ap.add_argument("--data", default="newdata_1972_2025.xlsx"); a = ap.parse_args()
 matplotlib.rcParams.update({"font.size": 8, "axes.titlesize": 9, "axes.labelsize": 8, "pdf.fonttype": 42})
 COORDS = {"Dhaka": (23.81, 90.41), "Chittagong": (22.36, 91.78), "Sylhet": (24.89, 91.86), "Rajshahi": (24.37, 88.60),
           "Rangpur": (25.75, 89.25), "Mymensingh": (24.75, 90.42), "Barisal": (22.70, 90.35), "Khulna": (22.84, 89.54),
@@ -15,53 +13,27 @@ COORDS = {"Dhaka": (23.81, 90.41), "Chittagong": (22.36, 91.78), "Sylhet": (24.8
           "Cox's Bazar": (21.45, 92.02), "Faridpur": (23.61, 89.84), "Rangamati": (23.14, 92.14), "Bhola": (22.68, 90.65)}
 LABEL = {"Chittagong": "Chattogram", "Barisal": "Barishal", "Jessore": "Jashore", "Bogra": "Bogura", "Comilla": "Cumilla", "Srimongal": "Sreemangal"}
 COASTAL = {"Chittagong", "Cox's Bazar", "Barisal", "Bhola", "Khulna"}
-# (dx, dy, ha): label pushed clear of the country where there is room, joined to its marker by a leader line,
-# so crowded stations (Barishal/Bhola, Cumilla/Rangamati) can no longer be read off the wrong dot.
-LAB = {"Rangpur": (-0.75, 0.10, "right"), "Bogra": (-0.55, 0.20, "right"), "Rajshahi": (-0.35, 0.15, "right"),
-       "Jessore": (-0.42, -0.12, "right"), "Khulna": (-0.55, -0.10, "right"), "Faridpur": (-0.32, 0.24, "right"),
-       "Barisal": (-0.55, -0.78, "right"), "Dhaka": (0.18, 0.30, "left"), "Mymensingh": (0.22, 0.32, "left"),
-       "Sylhet": (0.30, 0.16, "left"), "Srimongal": (0.58, 0.00, "left"), "Comilla": (0.55, 0.30, "left"),
-       "Rangamati": (0.38, 0.12, "left"), "Chittagong": (0.45, -0.22, "left"), "Cox's Bazar": (0.35, -0.14, "left"),
-       "Bhola": (0.48, -0.42, "left")}
+OFF = {"Barisal": (-0.28, -0.30), "Bhola": (0.08, -0.22), "Khulna": (-0.58, -0.06), "Faridpur": (-0.55, 0.08), "Cox's Bazar": (0.10, -0.18)}
 REP = ["Dhaka", "Cox's Bazar", "Rajshahi", "Sylhet"]
 
 def save(fig, name):
     fig.savefig(name + ".png", dpi=300, bbox_inches="tight"); fig.savefig(name + ".pdf", bbox_inches="tight"); plt.close(fig); print("saved", name)
 
 # ---------------- Fig 1: station map ----------------
-import os, geopandas as gpd
+import geopandas as gpd
 world = gpd.read_file(a.shp).to_crs("EPSG:4326"); col = next(c for c in ["ADMIN", "NAME"] if c in world.columns)
 bang = world[world[col].str.contains("Bangladesh", case=False)]; minx, miny, maxx, maxy = bang.total_bounds
-fig, ax = plt.subplots(figsize=(6.3, 7.2))
-ax.set_facecolor("#cfe3f0")                                              # water; land is drawn over it
-world.plot(ax=ax, facecolor="#dedcd5", edgecolor="#a8a8a8", linewidth=0.5)   # neighbours, deliberately duller than Bangladesh
-if os.path.exists(a.shp1):                                               # division boundaries, if the admin-1 file is there
-    adm1 = gpd.read_file(a.shp1).to_crs("EPSG:4326")
-    adm1[adm1["admin"].str.contains("Bangladesh", case=False, na=False)].boundary.plot(ax=ax, edgecolor="#9db4c2", linewidth=0.6, zorder=3)
-bang.plot(ax=ax, facecolor="#fcfaf2", edgecolor="none", zorder=2)
-bang.boundary.plot(ax=ax, edgecolor="black", linewidth=1.1, zorder=4)
-for nm, x, y in [("INDIA", 88.05, 26.45), ("INDIA", 92.95, 25.35), ("MYANMAR", 93.15, 22.65)]:
-    ax.text(x, y, nm, fontsize=7, color="#6f6f6f", ha="center", va="center", zorder=3)
-ax.text(90.0, 21.45, "Bay of Bengal", fontsize=7.5, color="#4a6d87", style="italic", ha="center", va="center", zorder=3)
+fig, ax = plt.subplots(figsize=(5.2, 6.5))
+bang.plot(ax=ax, facecolor="#eef3f7", edgecolor="black", linewidth=0.9)
 for st, (lat, lon) in COORDS.items():
-    c = "#c62828" if st not in COASTAL else "#1565c0"
-    dx, dy, ha = LAB[st]
-    ax.annotate(LABEL.get(st, st), xy=(lon, lat), xytext=(lon + dx, lat + dy), fontsize=7, ha=ha, va="center", zorder=6,
-                bbox=dict(boxstyle="round,pad=0.15", fc="white", ec="none", alpha=0.75),
-                arrowprops=dict(arrowstyle="-", lw=0.5, color="#555555", shrinkA=3, shrinkB=5))
-    ax.scatter(lon, lat, s=40, color=c, edgecolor="black", linewidth=0.6, zorder=7)
-ax.scatter([], [], s=40, color="#c62828", edgecolor="black", label="Inland station (11)")
-ax.scatter([], [], s=40, color="#1565c0", edgecolor="black", label="Coastal station (5)")
-ax.legend(loc="lower left", fontsize=7, frameon=True, framealpha=0.9)
-ax.annotate("N", xy=(0.955, 0.955), xytext=(0.955, 0.885), xycoords="axes fraction", ha="center", va="center",
-            fontsize=9, fontweight="bold", arrowprops=dict(arrowstyle="-|>", lw=1.2, color="black"))
-KM, x0, y0 = 100, 89.55, 20.95                                           # scale bar: 1° lon shrinks as cos(latitude)
-deg = KM / (111.320 * np.cos(np.radians(y0)))
-ax.plot([x0, x0 + deg], [y0, y0], color="black", lw=1.8, solid_capstyle="butt", zorder=8)
-for xe in (x0, x0 + deg): ax.plot([xe, xe], [y0 - 0.07, y0 + 0.07], color="black", lw=1.0, zorder=8)
-ax.text(x0 + deg / 2, y0 + 0.11, f"{KM} km", ha="center", va="bottom", fontsize=6.5, zorder=8)
-ax.set_aspect("equal"); ax.set_xlim(minx - 0.60, maxx + 1.00); ax.set_ylim(miny - 0.35, maxy + 0.35)
+    c = "tab:blue" if st in COASTAL else "tab:red"
+    ax.scatter(lon, lat, s=36, color=c, edgecolor="black", linewidth=0.6, zorder=5)
+    dx, dy = OFF.get(st, (0.09, 0.05)); ax.text(lon + dx, lat + dy, LABEL.get(st, st), fontsize=7, zorder=6)
+ax.scatter([], [], color="tab:red", edgecolor="black", label="Inland station (11)"); ax.scatter([], [], color="tab:blue", edgecolor="black", label="Coastal station (5)")
+ax.legend(loc="lower left", fontsize=7, frameon=True)
+ax.set_aspect("equal"); ax.set_xlim(minx - 0.15, maxx + 0.6); ax.set_ylim(miny - 0.15, maxy + 0.15)
 ax.set_xlabel("Longitude (°E)"); ax.set_ylabel("Latitude (°N)"); ax.set_title("BMD stations used (monthly maximum temperature, 1972–2025)")
+ax.text(0.99, 0.01, "Boundary: Natural Earth (public domain)", transform=ax.transAxes, ha="right", fontsize=6, color="grey")
 save(fig, "fig1_station_map")
 
 # ---------------- Fig 2: workflow ----------------

@@ -2,6 +2,7 @@
 import numpy as np, pandas as pd
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 from pipeline import load_all
+LAB = {"Chittagong": "Chattogram", "Barisal": "Barishal", "Jessore": "Jashore", "Bogra": "Bogura", "Comilla": "Cumilla", "Srimongal": "Sreemangal"}
 
 new = load_all("/mnt/user-data/uploads/2024-2025_newdata.xlsx") if False else None
 xl = pd.ExcelFile("/mnt/user-data/uploads/2024-2025_newdata.xlsx"); obs = {}
@@ -69,7 +70,7 @@ for ax, st in zip(axes.ravel(), obs):
     ax.plot(m.index, m.forecast, color="tab:red", lw=1.0, label="Forecast (fitted to 1972–2023)")
     ax.axvline(pd.Timestamp("2023-12-15"), color="grey", lw=0.6, ls=":")
     r = ver[ver.station == st].iloc[0]
-    ax.set_title(f"{st} — {r.model}: MAE {r.MAE:.2f} °C, coverage {100*r.cov95_conformal:.0f}%", fontsize=7.5); ax.grid(alpha=.25)
+    ax.set_title(f"{LAB.get(st, st)} — {r.model}: MAE {r.MAE:.2f} °C, coverage {100*r.cov95_conformal:.0f}%", fontsize=7.5); ax.grid(alpha=.25)
 for ax in axes[:, 0]: ax.set_ylabel("Max. temperature (°C)")
 for ax in axes[-1]: ax.set_xlabel("Year")
 h_, l_ = axes[0, 0].get_legend_handles_labels()

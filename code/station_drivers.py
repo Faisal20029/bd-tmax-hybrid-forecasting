@@ -13,6 +13,7 @@ zone = {"Rajshahi": "NW inland", "Bogra": "NW inland", "Rangpur": "NW inland", "
         "Faridpur": "Central", "Dhaka": "Central", "Mymensingh": "Central-N", "Comilla": "East", "Sylhet": "NE wet",
         "Srimongal": "NE wet", "Rangamati": "E hilly", "Chittagong": "SE coastal", "Cox's Bazar": "SE coastal",
         "Barisal": "S coastal", "Bhola": "S coastal"}
+LAB = {"Chittagong": "Chattogram", "Barisal": "Barishal", "Jessore": "Jashore", "Bogra": "Bogura", "Comilla": "Cumilla", "Srimongal": "Sreemangal"}
 data = load_all(); pooled = pd.read_csv("table_pooled_metrics.csv")
 rows = []
 for st, y in data.items():
@@ -42,7 +43,7 @@ print("\nCoastal vs inland SARIMA MAE:", d.groupby("coastal").SARIMA_MAE.mean().
 fig, ax = plt.subplots(1, 2, figsize=(8, 3.4))
 for a, xcol, xl in zip(ax, ["anomaly_sd", "seasonal_amplitude"], ["SD of monthly anomalies, 1972–2011 (°C)", "Seasonal amplitude of monthly means (°C)"]):
     a.scatter(d[xcol], d.SARIMA_MAE, c=d.coastal.map({1: "tab:blue", 0: "tab:red"}), s=28)
-    for _, r in d.iterrows(): a.annotate(r.station, (r[xcol], r.SARIMA_MAE), fontsize=6, xytext=(2, 2), textcoords="offset points")
+    for _, r in d.iterrows(): a.annotate(LAB.get(r.station, r.station), (r[xcol], r.SARIMA_MAE), fontsize=6, xytext=(2, 2), textcoords="offset points")
     a.set_xlabel(xl); a.set_ylabel("SARIMA MAE, 36-month recursive (°C)"); a.grid(alpha=.3)
 ax[0].scatter([], [], c="tab:blue", label="coastal"); ax[0].scatter([], [], c="tab:red", label="inland"); ax[0].legend(fontsize=7)
 plt.tight_layout(); plt.savefig("fig_station_drivers.png", dpi=300); plt.savefig("fig_station_drivers.pdf")

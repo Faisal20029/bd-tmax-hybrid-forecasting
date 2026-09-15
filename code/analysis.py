@@ -3,6 +3,7 @@ from scipy import stats
 import matplotlib; matplotlib.use("Agg")
 import matplotlib.pyplot as plt, seaborn as sns
 warnings.filterwarnings("ignore")
+LAB = {"Chittagong": "Chattogram", "Barisal": "Barishal", "Jessore": "Jashore", "Bogra": "Bogura", "Comilla": "Cumilla", "Srimongal": "Sreemangal"}
 H = 36
 MODELS = ["SNAIVE", "SARIMA", "ANN", "SVR", "XGB", "LSTM", "SARIMA+ANN", "SARIMA+SVR", "SARIMA+XGB", "SARIMA+LSTM"]
 
@@ -92,9 +93,9 @@ fr = stats.friedmanchisquare(*[mat[m].values for m in models])
 
 # ---------------- figures ----------------
 plt.rcParams.update({"font.size": 9, "font.family": "DejaVu Sans"})
-hm = pooled.pivot(index="station", columns="model", values="MAE")[models]
+hm = pooled.pivot(index="station", columns="model", values="MAE")[models]; hm.index = [LAB.get(i, i) for i in hm.index]
 plt.figure(figsize=(8.5, 6))
-sns.heatmap(hm, annot=True, fmt=".2f", cmap="RdYlGn_r", cbar_kws={"label": "MAE (°C)"})
+sns.heatmap(hm, annot=True, fmt=".2f", cmap="viridis_r", cbar_kws={"label": "MAE (°C)"})
 plt.title(("36-month recursive" if SET=="rec" else "One-step-ahead") + " out-of-sample MAE (°C), rolling origins 2012–2023")
 plt.ylabel(""); plt.xlabel(""); plt.tight_layout(); plt.savefig("fig_mae_heatmap"+TAG+".png", dpi=300); plt.savefig("fig_mae_heatmap"+TAG+".pdf")
 

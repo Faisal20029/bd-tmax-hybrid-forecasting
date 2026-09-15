@@ -7,6 +7,7 @@ import numpy as np, pandas as pd
 import matplotlib; matplotlib.use("Agg"); import matplotlib.pyplot as plt
 from pipeline import load_all, fit_sarima, make_xy, fit_ml, recursive_forecast, H, NLAG
 warnings.filterwarnings("ignore")
+LAB = {"Chittagong": "Chattogram", "Barisal": "Barishal", "Jessore": "Jashore", "Bogra": "Bogura", "Comilla": "Cumilla", "Srimongal": "Sreemangal"}
 ALPHA = 0.05
 BLOCKS = {1: range(1, 13), 2: range(13, 25), 3: range(25, 37)}
 SEASON = {"Summer (Mar–Jun)": [3, 4, 5, 6], "Rainy (Jul–Oct)": [7, 8, 9, 10], "Winter (Nov–Feb)": [11, 12, 1, 2]}
@@ -93,7 +94,7 @@ for ax, st in zip(axes.ravel(), data):
         ax.axvline(pd.Timestamp(f"{o}-12-15"), color="grey", lw=0.5, ls=":")
     ax.fill_between(m.date, m.lower95, m.upper95, color="tab:red", alpha=0.2, label="95% PI (forecast)")
     ax.plot(m.date, m.forecast, color="tab:red", lw=1.0, label="Forecast")
-    ax.set_title(f"{st} — {model}", fontsize=8); ax.grid(alpha=0.25)
+    ax.set_title(f"{LAB.get(st, st)} — {model}", fontsize=8); ax.grid(alpha=0.25)
 for ax in axes[:, 0]: ax.set_ylabel("Max. temperature (°C)")
 for ax in axes[-1]: ax.set_xlabel("Year")
 h_, l_ = axes[0, 0].get_legend_handles_labels()
